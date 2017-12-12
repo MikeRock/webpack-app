@@ -1,3 +1,4 @@
+/*! GIT init REV. 245e26f */
 webpackJsonp(["bundle"],{
 
 /***/ "./src/index.js":

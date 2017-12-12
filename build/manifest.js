@@ -1,3 +1,4 @@
+/*! GIT init REV. 245e26f */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// install a JSONP callback for chunk loading
 /******/ 	var parentJsonpFunction = window["webpackJsonp"];

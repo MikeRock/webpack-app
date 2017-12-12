@@ -3,6 +3,13 @@ import path from 'path'
 import ExtractTextPlugin from 'extract-text-webpack-plugin'
 import ChunkManifestPlugin from '@codemotion/chunk-manifest-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
+import ImageminWebpackPlugin from 'imagemin-webpack-plugin'
+import CopyWebpackPlugin from 'copy-webpack-plugin'
+import CleanWebpackPlugin from 'clean-webpack-plugin'
+import GitRevisionPlugin from 'git-revision-webpack-plugin'
+import mozJPEG from 'imagemin-mozjpeg'
+import glob from 'glob'
+
 
 export default {
     entry: {
@@ -20,21 +27,41 @@ export default {
     },
     module: {
         rules: [
-            { test: /\.jsx?$/,
+            { 
+              test: /\.jsx?$/,
               use: 'babel-loader',
               exclude: /node_modules/
             },
-            { test: /\.s?css$/,
+            { 
+              test: /\.s?css$/,
               use: ExtractTextPlugin.extract({
                   use: 'css-loader',
                   fallback: 'style-loader'
               }),
               exclude: /node_modules/  
+            },
+            {
+                test: /\.(jpe?g|png|gif)/,
+                use: {
+                        loader:'file-loader',
+                        options:{
+                            emitFile: false,
+                            name: '[path][name].[ext]'
+                    }},
+                exclude: /node_modules/
+            },
+            {   
+                test: /\.html/,
+                use:['html-loader','posthtml-loader']
             }
         ]
     },
     target: 'web',
     plugins: [
+        new webpack.BannerPlugin({
+            banner: `GIT ${new GitRevisionPlugin().branch()} REV. ${new GitRevisionPlugin().version()}`
+        }),
+        new CleanWebpackPlugin('build'),
         new ExtractTextPlugin({
             filename: 'styles.css',
             allChunks: true
@@ -68,6 +95,7 @@ export default {
             async: '[name].[chunkhash].js'
         }),
         new HtmlWebpackPlugin({
+            template: './src/template.html',
             title: 'Webpack',
             filename: 'index_no.html',
             injectManifest: false 
@@ -76,6 +104,21 @@ export default {
             filename: 'manifest.json',
             manifestVariable: 'webpackManifest',
             inlineManifest: true
+        }),
+        new webpack.optimize.ModuleConcatenationPlugin(),
+        new CopyWebpackPlugin([
+            ...glob.sync('images/*.png')
+            .map(source => ({from: source, to:'images' })),
+            ...glob.sync('images/*.jpg')
+            .map(source => ({from: source, to:'images'}))]
+        ),
+        new ImageminWebpackPlugin({
+            jpegtran: null,
+            plugins: [mozJPEG({
+                quality: 100,
+                progressive: true
+              })],
+            test: /\.(png|jpe?g)/
         })
 
 
