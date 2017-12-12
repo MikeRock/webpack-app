@@ -35,7 +35,10 @@ export default {
             { 
               test: /\.s?css$/,
               use: ExtractTextPlugin.extract({
-                  use: 'css-loader',
+                  use: {
+                        loader: 'css-loader', 
+                        options: {minimize: true}
+                    },
                   fallback: 'style-loader'
               }),
               exclude: /node_modules/  
